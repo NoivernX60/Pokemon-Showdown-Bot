@@ -11,6 +11,14 @@ if (config.serverid === 'showdown') {
 	var https = require('https');
 	var csv = require('csv-parse');
 }
+// TRIVIA BASED VARIABLES
+var triviaON = false;
+var triviaRoom;
+var triviaTimer;
+var triviaA;
+var triviaQ;
+var triviaPoints = [];
+var triviaQuestions = ['Pokemon with the lowest BST', 'Sunkern', 'What was Nintendos first game?', 'Radar Scope', 'What ability does ExampleYT have in Super Staff Brothers Melee?', 'Parental Bond', 'What is my grandsons name again?', 'Gary Oak'];
 
 exports.commands = {
 	/**
