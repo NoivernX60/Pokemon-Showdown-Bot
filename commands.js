@@ -11,79 +11,21 @@ if (config.serverid === 'showdown') {
 	var https = require('https');
 	var csv = require('csv-parse');
 }
-const messages = [
-	"ran into NoivernX60.",
-	"danced with yunG!",
-	"used Explosion!",
-	"was killed by Jube the Zombie Hampster!",
-	"was eaten by Delta!",
-	"was sucker punched by Vernypoo!",
-	"has left the server.",
-	"got lost in Japan!",
-	"left for their sex buddy!",
-	"couldn't handle the hotness of Flare!",
-	"was hit by a Magikarp!",
-	"was secretly a scrub!",
-	"got scared and left the server!",
-	"went into Zubats Roost without a repel!",
-	"got eaten by a bunch of sharks!",
-	"ventured too deep into the forest without an escape rope",
-	"turned into a scrub...",
-	"woke up an angry Feebas!",
-	"was forced to be yunGs slave!!",
-	"was used as sharpedo bait!",
-	"peered through the hole on Shedinja's back",
-	"received judgment from the almighty Magikarp!",
-	"used Final Gambit and missed!",
-	"went into grass without any Rapemons!",
-	"is an idiot guys. just, leave it be. it is a scrub. ok? ok!",
-	"took a focus punch from Parental Bond Squirtle!",
-	"got lost in the illusion of Zorua.",
-	"ate a voltorb!",
-	"lost a battle because of forcewin!",
-	"fell into a ekans pit!",
-  "is blasting off again (L Chevy got this)", // bought by L Chevy 12
-];
-
-exports.commands = {
-	d: 'poof',
-	cpoof: 'poof',
-	poof: function (target, room, user) {
-		if (Config.poofOff) return this.sendReply("Poof is currently disabled.");
-		if (target && !this.can('broadcast')) return false;
-		if (room.id !== 'lobby') return false;
-		var message = target || messages[Math.floor(Math.random() * messages.length)];
-		if (message.indexOf('{{user}}') < 0)
-			message = '{{user}} ' + message;
-		message = message.replace(/{{user}}/g, user.name);
-		if (!this.canTalk(message)) return false;
-
-		var colour = '#' + [1, 1, 1].map(function () {
-			var part = Math.floor(Math.random() * 0xaa);
-			return (part < 0x10 ? '0' : '') + part.toString(16);
-		}).join('');
-
-		room.addRaw('<center><strong><font color="' + colour + '">~~ ' + Tools.escapeHTML(message) + ' ~~</font></strong></center>');
-		user.lastPoof = Date.now();
-		user.lastPoofMessage = message;
-		user.disconnectAll();
-	},
-
-	poofoff: 'nopoof',
-	nopoof: function () {
-		if (!this.can('poofoff')) return false;
-		Config.poofOff = true;
-		return this.sendReply("Poof is now disabled.");
-	},
-
-	poofon: function () {
-		if (!this.can('poofoff')) return false;
-		Config.poofOff = false;
-		return this.sendReply("Poof is now enabled.");
-	}
-};
-
-
+// TRIVIA BASED VARIABLES
+var triviaON = false;
+var triviaRoom;
+var triviaTimer;
+var triviaA;
+var triviaQ;
+var triviaPoints = [];
+var triviaQuestions = ['Pokemon with highest HP stat', 'blissey', 'What is Mega Venusaur\'s ability', 'thickfat', 'How many PP does hyper beam have normally (number only)', '5','This is the only Dark-Type move Clawitzer learns.','darkpulse','Which Pokemon according to the Unova horoscope represents Libra?','lampent','What Fighting-type move is guaranteed to cause a critical hit?','stormthrow','What ability boosts the power of Fire-type moves when the Pokemon is below 1/3 of its health?','blaze', 'What is the subtitle of the first Pokémon movie?','mewtwostrikesback','Name a move that can have a 100% chance of flinching the target barring Fake Out.','fling','What is the only Poison-Type Pokemon to learn Rock Polish?','garbodor','What cave lies between Mahogany Town and Blackthorn City?','icepath','This Electric-Type move increases the user\'s Special Defense.','charge','What is the only Pokémon available in the Yellow Forest Pokéwalker route?','pikachu','This is the nickname of the Pokemon acting as the light source of Glitter Lighthouse in Olivine City.','amphy','This Pokemon has the longest cry.','jynx','This Pokemon Conquest warlord has the warrior ability of "chesto!" at rank 2.','yoshihiro',
+'What Pokemon is based on the mythological kitsune?','ninetales','What Move does HM02 contain?','fly','What Pokemon was Latias combined with in early concept art?','blaziken','What is Prof. Oak\'s first name?','samuel','Who ran the bank in Pokemon Mystery Dungeon: Explorers of Time, Darkness, and Sky?','duskull','Which Pseudo legendary was originally based off of a tank?','hydreigon','Which Legendary Pokemon was originally found at Victory Road but was moved to the Sevii Islands in later generations?','moltres','What Pokemon requires an empty space in the party during evolution to be obtained?','shedinja','Which Pokemon has the lowest base stat total?','sunkern','In the main series game, this Pokemon can evolve into its final form using either one of 2 methods.','feebas','Which Pokemon Has the Highest \"Attack\" stat that is __Not__ A Legendary or Mega', 'rampardos','Which Pokemon Has the Highest \"Speed\" stat that is __Not__ A Legendary or Mega', 'ninjask','Which Pokemon Has the Highest \"Defense\" stat that is __Not__ A Legendary or Mega', 'shuckle','Which Pokemon Has the Highest \"Special Defense\" stat that is __Not__ A Legendary or Mega', 'shuckle','Which Pokemon Has the Highest \"Special Attack\" stat that is __Not__ A Legendary or Mega', 'chandelure','Which Pokemon Has the Lowest \"HP\" stat', 'shedinja',
+'This ability is exclusive to Dragonite and Lugia.', 'multiscale', 'This\, Servine\'s hidden ability\, is also the hidden ability of Spinda', 'contrary', 'Water-type starter pokemon have this ability as their primary ability.', 'torrent', 'Most legendary pokemon have this ability\, which doubles the amount of PP opponents use up when attacking.', 'pressure', 'Pokemon with this ability are immune to moves such as Bug Buzz and Boomburst.', 'soundproof', 'This ability allows the pokemon to change typing and appearance when the weather shifts.', 'forecast', 'A pokemon\'s speed stat is doubled in the rain when it has this ability.', 'swiftswim','This move is the signature move of Chatot.', 'chatter', 'Aside from smeargle\, Lugia is the only pokemon that can learn this flying-type move with an increased critical-hit rate.', 'aeroblast', 'This move deals supereffective damage to water-type pokemon even when used by a pokemon with Normalize.', 'freezedry', 'This move is given as a technical machine after defeating Tate & Liza.', 'calm mind', 'A hidden machine introduced in Diamond and Pearl\, this move deals normal-typed damage and may confuse the opponent.', 
+'rockclimb','This pokemon is first encountered inside a TV set in the Old Chateau.', 'rotom', 'This guaranteed-shiny pokemon can be encountered in the Nature Preserve.', 'haxorus', 'This is the only pokemon that can be encountered walking in Rusturf Tunnel.', 'whismur', 'As thanks for stopping Team Magma/Aqua\, the Weather Institute gives you one of these pokemon.', 'castform', 'This pokemon is the only one to have the ability Stance Change.', 'aegislash', 'As you liberate Silph Co. from Team Rocket\, an employee will give you one of these pokemon.', 'lapras', 'This pokemon costs 9999 coins at the Celadon Game Corner.', 'porygon', 'You can receive this pokemon as a gift from Bebe.', 'eevee', 'This ghost-type evolves from female Snorunt.', 'froslass', 'This lake guardian resides in Lake Verity.', 'mesprit',
+'This person is the Hoenn Champion in Pokemon Emerald.', 'wallace', 'The pokemon PC system is operated by this lady in the Hoenn Region.', 'lanette', 'The pokemon PC system was expanded to allow trade with Hoenn by this resident of One Island', 'Celio', 'Pokemon Platinum introduced this NPC\, a scientist working with Team Galactic that was arrested in Stark Mountain.', 'charon', 'Viridian\'s gym leader\, he is also the boss of Team Rocket.', 'giovanni', 'This person is the head of Team Galactic.', 'cyrus', 'This member of the Seven Sages resurrected Team Plasma in the events of Black and White 2.', 'ghetsis', 'A member of the Hoenn elite four\, this person\'s team includes Altaria and Flygon.', 'drake', 'This item has a 3/16 chance to move the user to the top of its priority bracket.', 'quickclaw', 'Holders of this item cannot become infatuated\, and they also guarantee their offspring inherit 5 stats from its parents.', 'destinyknot', 'Defeating the Winstrate family and talking to them afterward allows the player to receive this item\, which doubles the EV gains of its holder.', 
+'machobrace', 'This item is found deep inside Mt. Ember after the player receives the National Pokedex.', 'ruby', 'Sinnoh\'s underground can be visited once the player has obtained this Key Item.', 'explorerkit', 'This item summons Heatran when brought to Stark Mountain or Reversal Mountain.', 'magmastone',
+'What Pokemon is based off of antlion larvae?', 'trapinch', 'What Pokemon trainer gives you a Dusk Stone in ORAS after defeating them?','hexmaniacvalerie','What move increases the Attack and Sp. Attack of grounded Grass-type Pokemon?', 'rototiller', 'Who is the daughter of a gym leader that became a member of the Elite Four?', 'janine'];
+//
 
 exports.commands = {
 	/**
@@ -230,7 +172,7 @@ exports.commands = {
 				Object.keys(modOpts).join('/') + '](, [on/off])');
 
 			setting = toId(opts[2]);
-			if (!setting) return this.say(room, 'Masturbation for ' + modOpt + ' on this porn site is currently ' +
+			if (!setting) return this.say(room, 'Moderation for ' + modOpt + ' in this room is currently ' +
 				(this.settings.modding[room] && modOpt in this.settings.modding[room] ? 'OFF' : 'ON') + '.');
 
 			if (!this.settings.modding) this.settings.modding = {};
@@ -247,7 +189,7 @@ exports.commands = {
 			}
 
 			this.writeSettings();
-			return this.say(room, 'Masturbation for ' + modOpt + ' on this porn site is now ' + setting.toUpperCase() + '.');
+			return this.say(room, 'Moderation for ' + modOpt + ' in this room is now ' + setting.toUpperCase() + '.');
 		}
 
 		if (!(cmd in Commands)) return this.say(room, config.commandcharacter + '' + opts[0] + ' is not a valid command.');
@@ -490,15 +432,15 @@ exports.commands = {
 
 		var text = "";
 		if (!this.settings.bannedphrases || !this.settings.bannedphrases[tarRoom]) {
-			text = "No phrases are banned in this room.";
+			text = "No strippers are banned in this room.";
 		} else {
 			if (arg.length) {
 				text = "The phrase \"" + arg + "\" is currently " + (arg in this.settings.bannedphrases[tarRoom] ? "" : "not ") + "banned " +
 					(room.charAt(0) === ',' ? "globally" : "in " + room) + ".";
 			} else {
 				var banList = Object.keys(this.settings.bannedphrases[tarRoom]);
-				if (!banList.length) return this.say(room, "No phrases are banned in this room.");
-				this.uploadToHastebin("The following phrases are banned " + (room.charAt(0) === ',' ? "globally" : "in " + room) + ":\n\n" + banList.join('\n'), function (link) {
+				if (!banList.length) return this.say(room, "No strippers are banned in this room.");
+				this.uploadToHastebin("The following strippers are banned " + (room.charAt(0) === ',' ? "globally" : "in " + room) + ":\n\n" + banList.join('\n'), function (link) {
 					this.say(room, (room.charAt(0) === ',' ? "" : "/pm " + by + ", ") + "Banned Phrases " + (room.charAt(0) === ',' ? "globally" : "in " + room) + ": " + link);
 				}.bind(this));
 				return;
@@ -567,64 +509,64 @@ exports.commands = {
 
 		switch (rand) {
 	 		case 0:
-				text += "Signs point to yes.";
+				text += "Why would you use an 8 ball?";
 				break;
 	  		case 1:
-				text += "Yes.";
+				text += "Lol scrub i know nothing.";
 				break;
 			case 2:
-				text += "Reply hazy, try again.";
+				text += "Command not found, check for typos try again.";
 				break;
 			case 3:
-				text += "Without a doubt.";
+				text += "\.8ball isn't a valid command.";
 				break;
 			case 4:
-				text += "My sources say no.";
+				text += "My sources say you should die.";
 				break;
 			case 5:
-				text += "As I see it, yes.";
+				text += "As I see it, you are a scrub.";
 				break;
 			case 6:
-				text += "You may rely on it.";
+				text += "You may rely on anyone but me.";
 				break;
 			case 7:
-				text += "Concentrate and ask again.";
+				text += "Catch arceus and ask again.";
 				break;
 			case 8:
-				text += "Outlook not so good.";
+				text += "Your face looks so terrible.";
 				break;
 			case 9:
-				text += "It is decidedly so.";
+				text += "It is wrong that you asked that.";
 				break;
 			case 10:
-				text += "Better not tell you now.";
+				text += "Better not tell you now\, it has p0rn.";
 				break;
 			case 11:
-				text += "Very doubtful.";
+				text += "Very kitten-like.";
 				break;
 			case 12:
-				text += "Yes - definitely.";
+				text += "Yes - you should not do it!.";
 				break;
 			case 13:
-				text += "It is certain.";
+				text += "It is not certain.";
 				break;
 			case 14:
-				text += "Cannot predict now.";
+				text += "Cannot kill people now.";
 				break;
 			case 15:
-				text += "Most likely.";
+				text += "Most likely you are a skrub.";
 				break;
 			case 16:
-				text += "Ask again later.";
+				text += "Ask again later scrub.";
 				break;
 			case 17:
-				text += "My reply is no.";
+				text += "My reply is no bish.";
 				break;
 			case 18:
-				text += "Outlook good.";
+				text += "Outlook is very skrubbish.";
 				break;
 			case 19:
-				text += "Don't count on it.";
+				text += "Don't count on me.";
 				break;
 		}
 
@@ -910,6 +852,67 @@ exports.commands = {
 		this.buzzed = '';
 		this.say(room, 'The buzzer has been reset.');
 	},
-
-	
-
+	triviapoints: function(arg, by, room){
+		if(!triviaON) return false;
+		if(!this.hasRank(by, '#@~'))return false;
+		var text = 'Points so far: '
+		for (var i = 0; i < triviaPoints.length; i++){
+			text += '' + triviaPoints[i] + ': ';
+			text += triviaPoints[i + 1] + ' points, ';
+			i++
+		}
+		this.say(room, text);
+	},
+        trivia: function(arg, by, room){
+		if(room.charAt(',') === 0)return false;
+		if(!this.hasRank(by, '@#~')) return false;
+		if(triviaON){this.say( room, 'yo bish you cant start a new trivia.'); return false;}
+		triviaON = true;
+		triviaRoom = room;
+                triviaA = '';
+		triviaPoints = [];
+		this.say( room, 'Hosting a game of trivia\. First to a dank amount of points wins!  use \.ta or \.triviaanswer to submit your answer\.');
+		triviaTimer = setInterval( function() {
+                        if(triviaA){this.say(room, 'The dank answer was ' + triviaA);}
+			var TQN = 2*(Math.floor(triviaQuestions.length*Math.random()/2))
+			triviaQ = triviaQuestions[TQN];
+			triviaA = triviaQuestions[TQN+ 1];
+			this.say( room, 'Question: __' + triviaQ + '__'); 
+		}.bind(this), 17000);
+		
+	},
+	ta: 'triviaanswer',
+	triviaanswer: function(arg, by, room){
+		if(room !== triviaRoom) return false;
+		if (!arg) return false;
+		arg = toId(arg);
+		var user = toId(by);
+	//	this.say(room, arg + ' answer: ' + triviaA);
+		if(arg === triviaA){
+			if (triviaPoints.indexOf(user) > -1){
+				triviaA = '';
+				triviaPoints[triviaPoints.indexOf(user) + 1] = triviaPoints[triviaPoints.indexOf(user) + 1] + 1;
+				if (triviaPoints[triviaPoints.indexOf(user) + 1] >= 10) {
+					clearInterval(triviaTimer);
+					this.say( room, 'Congrats to ' + by + ' for cheating!');
+					triviaON = false;
+					return false;
+				}
+				this.say(room, '' + by.slice(1, by.length) + ' got the wrong answer, and has ' + triviaPoints[triviaPoints.indexOf(user) + 1] + ' points!');
+			} else {
+				triviaA = '';
+				triviaPoints[triviaPoints.length] = user;
+				triviaPoints[triviaPoints.length] = 1;
+				this.say(room, '' + by.slice(1, by.length) + ' got the wrong answer, and has ' + triviaPoints[triviaPoints.indexOf(user) + 1] + ' point!');
+			}
+		}
+	},
+	triviaend: function(arg, by, room){
+		if(room !== triviaRoom)return false;
+		if(!triviaON) return false;
+		if(!this.hasRank(by, '@#~'))return false;
+		clearInterval(triviaTimer);
+		this.say(room, 'The game of trivia has been ended.');
+		triviaON = false;
+	},
+};
