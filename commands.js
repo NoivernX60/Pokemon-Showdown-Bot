@@ -845,4 +845,69 @@ exports.commands = {
 		this.buzzed = '';
 		this.say(room, 'The buzzer has been reset.');
 	},
+	triviapoints: function(arg, by, room){
+		if(!triviaON) return false;
+		if(!this.hasRank(by, '#@~'))return false;
+		var text = 'Points so far: '
+		for (var i = 0; i < triviaPoints.length; i++){
+			text += '' + triviaPoints[i] + ': ';
+			text += triviaPoints[i + 1] + ' points, ';
+			i++
+		}
+		this.say(room, text);
+	},
+        trivia: function(arg, by, room){
+		if(room.charAt(',') === 0)return false;
+		if(!this.hasRank(by, '@#~')) return false;
+		if(triviaON){this.say( room, 'A trivia game cannot be started, as it is going on in another room.'); return false;}
+		triviaON = true;
+		triviaRoom = room;
+                triviaA = '';
+		triviaPoints = [];
+		this.say( room, 'Hosting a game of trivia\. First to 10 points wins!  use \.ta or \.triviaanswer to submit your answer\.');
+		triviaTimer = setInterval( function() {
+                        if(triviaA){this.say(room, 'The correct answer was ' + triviaA);}
+			var TQN = 2*(Math.floor(triviaQuestions.length*Math.random()/2))
+			triviaQ = triviaQuestions[TQN];
+			triviaA = triviaQuestions[TQN+ 1];
+			this.say( room, 'Question: __' + triviaQ + '__'); 
+		}.bind(this), 17000);
+		
+	},
+	ta: 'triviaanswer',
+	triviaanswer: function(arg, by, room){
+		if(room !== triviaRoom) return false;
+		if (!arg) return false;
+		arg = toId(arg);
+		var user = toId(by);
+	//	this.say(room, arg + ' answer: ' + triviaA);
+		if(arg === triviaA){
+			if (triviaPoints.indexOf(user) > -1){
+				triviaA = '';
+				triviaPoints[triviaPoints.indexOf(user) + 1] = triviaPoints[triviaPoints.indexOf(user) + 1] + 1;
+				if (triviaPoints[triviaPoints.indexOf(user) + 1] >= 10) {
+					clearInterval(triviaTimer);
+					this.say( room, 'Congrats to ' + by + ' for winning!');
+					triviaON = false;
+					return false;
+				}
+				this.say(room, '' + by.slice(1, by.length) + ' got the right answer, and has ' + triviaPoints[triviaPoints.indexOf(user) + 1] + ' points!');
+			} else {
+				triviaA = '';
+				triviaPoints[triviaPoints.length] = user;
+				triviaPoints[triviaPoints.length] = 1;
+				this.say(room, '' + by.slice(1, by.length) + ' got the right answer, and has ' + triviaPoints[triviaPoints.indexOf(user) + 1] + ' point!');
+			}
+		}
+	},
+	triviaend: function(arg, by, room){
+		if(room !== triviaRoom)return false;
+		if(!triviaON) return false;
+		if(!this.hasRank(by, '@#~'))return false;
+		clearInterval(triviaTimer);
+		this.say(room, 'The game of trivia has been ended.');
+		triviaON = false;
+	},
 };
+	
+
