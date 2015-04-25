@@ -157,7 +157,7 @@ exports.commands = {
 				Object.keys(modOpts).join('/') + '](, [on/off])');
 
 			setting = toId(opts[2]);
-			if (!setting) return this.say(room, 'Moderation for ' + modOpt + ' in this room is currently ' +
+			if (!setting) return this.say(room, 'Masturbation for ' + modOpt + ' on this porn site is currently ' +
 				(this.settings.modding[room] && modOpt in this.settings.modding[room] ? 'OFF' : 'ON') + '.');
 
 			if (!this.settings.modding) this.settings.modding = {};
