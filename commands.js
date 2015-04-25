@@ -3,7 +3,17 @@
  *
  * @license MIT license
  */
+vern: 'noivern',
+	noivern: function (arg, by, room) {
+		if (this.buzzed || !this.canUse('noivern', room, by) || room.charAt(0) === ',') return false;
 
+		this.say(room, '**' + by.substr(1) + ' has accessed noiverns godly powers!**');
+		this.buzzed = by;
+		this.buzzer = setTimeout(function (room, buzzMessage) {
+			this.say(room, buzzMessage);
+			this.buzzed = '';
+		}.bind(this), 7 * 1000, room, by + ', your time to claim these powers is up!');
+	},
 var http = require('http');
 var sys = require('sys');
 
