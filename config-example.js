@@ -17,12 +17,12 @@ exports.serverid = 'showdown';
 
 // The nick and password to log in with
 // If no password is required, leave pass empty
-exports.nick = 'Example bot nick';
+exports.nick = 'Cri Leader Saddis';
 exports.pass = '';
 
 // The rooms that should be joined.
 // Joining Smogon's Showdown's Lobby is not allowed.
-exports.rooms = ['example room name', 'another example'];
+exports.rooms = ['ingame', 'videogames'];
 
 // Any private rooms that should be joined.
 // Private rooms will be moderated differently (since /warn doesn't work in them).
@@ -33,7 +33,7 @@ exports.privaterooms = [];
 // Note that using / and ! might be 'dangerous' since these are used in
 // Showdown itself.
 // Using only alphanumeric characters and spaces is not allowed.
-exports.commandcharacter = '.';
+exports.commandcharacter = '$';
 
 // The default rank is the minimum rank that can use a command in a room when
 // no rank is specified in settings.json
